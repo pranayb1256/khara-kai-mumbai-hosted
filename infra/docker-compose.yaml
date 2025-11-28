@@ -1,0 +1,78 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6.0
+    restart: always
+    ports: ["27017:27017"]
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports: ["6379:6379"]
+
+  backend:
+    build:
+      context: ./backend
+    volumes:
+      - ./backend:/usr/src/app
+    env_file:
+      - ./backend/.env
+    ports:
+      - "4000:4000"
+    depends_on:
+      - mongo
+      - redis
+
+  claim-extractor:
+    build:
+      context: ./services/claim-extractor
+    volumes:
+      - ./services/claim-extractor:/app
+    env_file:
+      - ./services/claim-extractor/.env
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+
+  scrapers:
+    build:
+      context: ./services/scrapers
+    volumes:
+      - ./services/scrapers:/app
+    env_file:
+      - ./services/scrapers/.env
+    ports:
+      - "8002:8002"
+    depends_on:
+      - redis
+      - mongo
+
+  image-checker:
+    build:
+      context: ./services/image-checker
+    volumes:
+      - ./services/image-checker:/app
+    env_file:
+      - ./services/image-checker/.env
+    ports:
+      - "8003:8003"
+    depends_on:
+      - redis
+
+  explain:
+    build:
+      context: ./services/explain
+    volumes:
+      - ./services/explain:/app
+    env_file:
+      - ./services/explain/.env
+    ports:
+      - "8004:8004"
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
