@@ -1,17 +1,27 @@
 {
-  "name": "server",
+  "name": "khar-ka-mumbai-backend",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI-powered fact-checking backend for Mumbai news and rumors",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "worker": "node worker/verificationworker.js",
+    "worker:dev": "nodemon worker/verificationworker.js"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "fact-checking",
+    "mumbai",
+    "ai",
+    "verification"
+  ],
+  "author": "Khar Ka Mumbai Team",
   "license": "ISC",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.0",
     "axios": "^1.13.2",
@@ -23,9 +33,11 @@
     "helmet": "^8.1.0",
     "ioredis": "^5.8.2",
     "morgan": "^1.10.1",
+    "node-fetch": "^3.3.2",
     "nodemon": "^3.1.11",
     "pino": "^10.1.0",
     "puppeteer": "^24.31.0",
+    "rate-limiter-flexible": "^5.0.5",
     "twitter-api-v2": "^1.28.0",
     "uuid": "^13.0.0"
   }
