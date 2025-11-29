@@ -1,0 +1,113 @@
+services:
+  # ===================
+  # Node.js Backend API
+  # ===================
+  - type: web
+    name: khar-ka-mumbai-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_PORT
+        value: 4000
+      - key: CORS_ORIGIN
+        sync: false # Set this manually to your Vercel frontend URL
+      - key: SUPABASE_URL
+        sync: false # Set manually in Render dashboard
+      - key: SUPABASE_ANON_KEY
+        sync: false # Set manually in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false # Set manually in Render dashboard
+      - key: REDIS_URL
+        sync: false # Set manually if using Redis
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # ===================
+  # Background Worker
+  # ===================
+  - type: worker
+    name: khar-ka-mumbai-worker
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm run worker
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: REDIS_URL
+        sync: false
+    autoDeploy: true
+
+  # ===================
+  # Python Microservices
+  # ===================
+  
+  # Claim Extractor Service
+  - type: web
+    name: claim-extractor
+    runtime: docker
+    rootDir: services/claim-extractor
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Deepfake Detector Service
+  - type: web
+    name: deepfake-detector
+    runtime: docker
+    rootDir: services/deepfake-detector
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Explain Service
+  - type: web
+    name: explain-service
+    runtime: docker
+    rootDir: services/explain
+    dockerfilePath: ./DockerFile
+    envVars:
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Image Checker Service
+  - type: web
+    name: image-checker
+    runtime: docker
+    rootDir: services/image-checker
+    dockerfilePath: ./DockerFile
+    envVars:
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Scrappers Service
+  - type: web
+    name: scrappers-service
+    runtime: docker
+    rootDir: services/scrappers
+    dockerfilePath: ./DockerFile
+    envVars:
+      - key: PORT
+        value: 8000
+    healthCheckPath: /health
+    autoDeploy: true
