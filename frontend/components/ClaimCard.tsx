@@ -27,26 +27,29 @@ function cn(...inputs: ClassValue[]) {
 
 interface ClaimCardProps {
   claim: Claim;
+  isSelected?: boolean;
+  onClick?: () => void;
+  compact?: boolean;
 }
 
 const statusConfig = {
   verified: {
     icon: CheckCircle,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    bgSolid: 'bg-emerald-500',
-    border: 'border-emerald-200',
-    badge: 'bg-emerald-100 text-emerald-800',
-    label: 'Verified True',
+    color: 'text-green-600',
+    bg: 'bg-green-50',
+    bgSolid: 'bg-green-500',
+    border: 'border-green-200',
+    badge: 'bg-green-100 text-green-800 border border-green-200',
+    label: 'Confirmed',
   },
   debunked: {
     icon: XCircle,
-    color: 'text-rose-600',
-    bg: 'bg-rose-50',
-    bgSolid: 'bg-rose-500',
-    border: 'border-rose-200',
-    badge: 'bg-rose-100 text-rose-800',
-    label: 'False / Debunked',
+    color: 'text-red-600',
+    bg: 'bg-red-50',
+    bgSolid: 'bg-red-500',
+    border: 'border-red-200',
+    badge: 'bg-red-100 text-red-800 border border-red-200',
+    label: 'Contradicted',
   },
   uncertain: {
     icon: AlertTriangle,
@@ -54,7 +57,7 @@ const statusConfig = {
     bg: 'bg-amber-50',
     bgSolid: 'bg-amber-500',
     border: 'border-amber-200',
-    badge: 'bg-amber-100 text-amber-800',
+    badge: 'bg-amber-100 text-amber-800 border border-amber-200',
     label: 'Uncertain',
   },
   pending: {
@@ -63,7 +66,7 @@ const statusConfig = {
     bg: 'bg-blue-50',
     bgSolid: 'bg-blue-500',
     border: 'border-blue-200',
-    badge: 'bg-blue-100 text-blue-800',
+    badge: 'bg-blue-100 text-blue-800 border border-blue-200',
     label: 'Verifying...',
   },
   in_progress: {
@@ -72,25 +75,25 @@ const statusConfig = {
     bg: 'bg-blue-50',
     bgSolid: 'bg-blue-500',
     border: 'border-blue-200',
-    badge: 'bg-blue-100 text-blue-800',
+    badge: 'bg-blue-100 text-blue-800 border border-blue-200',
     label: 'Processing...',
   },
   confirmed: {
     icon: CheckCircle,
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    bgSolid: 'bg-emerald-500',
-    border: 'border-emerald-200',
-    badge: 'bg-emerald-100 text-emerald-800',
+    color: 'text-green-600',
+    bg: 'bg-green-50',
+    bgSolid: 'bg-green-500',
+    border: 'border-green-200',
+    badge: 'bg-green-100 text-green-800 border border-green-200',
     label: 'Confirmed',
   },
   contradicted: {
     icon: XCircle,
-    color: 'text-rose-600',
-    bg: 'bg-rose-50',
-    bgSolid: 'bg-rose-500',
-    border: 'border-rose-200',
-    badge: 'bg-rose-100 text-rose-800',
+    color: 'text-red-600',
+    bg: 'bg-red-50',
+    bgSolid: 'bg-red-500',
+    border: 'border-red-200',
+    badge: 'bg-red-100 text-red-800 border border-red-200',
     label: 'Contradicted',
   },
   unconfirmed: {
@@ -99,14 +102,14 @@ const statusConfig = {
     bg: 'bg-amber-50',
     bgSolid: 'bg-amber-500',
     border: 'border-amber-200',
-    badge: 'bg-amber-100 text-amber-800',
+    badge: 'bg-amber-100 text-amber-800 border border-amber-200',
     label: 'Unconfirmed',
   },
 };
 
 type StatusKey = keyof typeof statusConfig;
 
-export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
+export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, isSelected, onClick, compact }) => {
   const [lang, setLang] = useState<'en' | 'hi' | 'mr'>('en');
   const [showEvidence, setShowEvidence] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -120,6 +123,63 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
   const hasExplanation = claim.explanation || claim.explanations;
   const explanation = claim.explanation || claim.explanations;
 
+  // Compact version for sidebar list
+  if (compact) {
+    return (
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        onClick={onClick}
+        className={cn(
+          'group relative overflow-hidden rounded-xl border bg-white shadow-sm transition-all cursor-pointer hover:shadow-md',
+          isSelected ? 'border-orange-500 ring-2 ring-orange-500/20' : 'border-gray-200 hover:border-orange-300'
+        )}
+      >
+        {/* Status Stripe */}
+        <div className={cn("absolute left-0 top-0 bottom-0 w-1", config.bgSolid)} />
+
+        <div className="p-4 pl-5">
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <motion.span 
+              className={cn(
+                "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase",
+                config.badge
+              )}
+              animate={isLoading ? { scale: [1, 1.02, 1] } : {}}
+              transition={{ duration: 1.5, repeat: isLoading ? Infinity : 0 }}
+            >
+              <Icon className={cn("w-3 h-3", isLoading && "animate-spin")} />
+              {config.label}
+            </motion.span>
+            
+            {claim.confidence !== undefined && claim.confidence !== null && !isLoading && (
+              <span className="text-xs font-bold text-gray-700">
+                {(claim.confidence * 100).toFixed(0)}%
+              </span>
+            )}
+          </div>
+
+          <p className="text-sm font-medium text-gray-900 line-clamp-2 mb-2">
+            {claim.text}
+          </p>
+
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <Clock className="w-3 h-3" />
+            {formatDistanceToNow(new Date(claim.created_at), { addSuffix: true })}
+            {claim.priority && claim.priority >= 7 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-[10px] font-semibold">
+                <Zap className="w-2.5 h-2.5" />
+              </span>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // Full version
   return (
     <>
       <motion.div
@@ -151,13 +211,13 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
                 {config.label}
               </motion.span>
               
-              <span className="inline-flex items-center gap-1 text-xs text-gray-400 font-medium">
+              <span className="inline-flex items-center gap-1 text-xs text-gray-500 font-medium">
                 <Clock className="w-3 h-3" />
                 {formatDistanceToNow(new Date(claim.created_at), { addSuffix: true })}
               </span>
 
               {claim.priority && claim.priority >= 7 && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold border border-orange-200">
                   <Zap className="w-3 h-3" />
                   High Priority
                 </span>
@@ -165,23 +225,13 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
 
               {/* Recency Badge */}
               {claim.extracted?.recency?.isOldNews && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-semibold border border-purple-200">
                   📅 Old News
                 </span>
               )}
               {claim.extracted?.recency?.isCurrentEvent && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold border border-green-200">
                   🔴 Current Event
-                </span>
-              )}
-              {claim.extracted?.recency?.daysSinceLatestEvidence !== undefined && 
-               claim.extracted?.recency?.daysSinceLatestEvidence !== null && (
-                <span className="text-xs text-gray-400">
-                  Evidence: {claim.extracted.recency.daysSinceLatestEvidence === 0 
-                    ? 'Today' 
-                    : claim.extracted.recency.daysSinceLatestEvidence === 1 
-                      ? 'Yesterday'
-                      : `${claim.extracted.recency.daysSinceLatestEvidence} days ago`}
                 </span>
               )}
             </div>
@@ -189,14 +239,14 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
             {claim.confidence !== undefined && claim.confidence !== null && !isLoading && (
               <div className="flex flex-col items-end">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-bold text-gray-700">
+                  <span className="text-sm font-bold text-gray-900">
                     {(claim.confidence * 100).toFixed(0)}%
                   </span>
-                  <span className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider">
+                  <span className="text-[10px] text-gray-500 uppercase font-semibold tracking-wider">
                     Confidence
                   </span>
                 </div>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden mt-1.5">
+                <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden mt-1.5">
                   <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${claim.confidence * 100}%` }}
@@ -222,14 +272,14 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="bg-linear-to-br from-gray-50 to-white rounded-xl p-4 border border-gray-100 mb-4"
+                className="bg-gray-50 rounded-xl p-4 border border-gray-200 mb-4"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <Globe className="w-4 h-4 text-blue-500" />
+                    <Globe className="w-4 h-4 text-orange-500" />
                     <span>AI Analysis</span>
                   </div>
-                  <div className="flex bg-white rounded-lg p-0.5 shadow-sm border border-gray-200">
+                  <div className="flex bg-gray-200 rounded-lg p-0.5">
                     {(['en', 'hi', 'mr'] as const).map((l) => (
                       <button
                         key={l}
@@ -237,8 +287,8 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
                         className={cn(
                           "text-xs px-3 py-1.5 rounded-md font-medium transition-all",
                           lang === l 
-                            ? "bg-linear-to-r from-blue-600 to-violet-600 text-white shadow-sm" 
-                            : "text-gray-500 hover:bg-gray-50 hover:text-gray-700"
+                            ? "bg-white text-gray-900 shadow-sm" 
+                            : "text-gray-500 hover:text-gray-700"
                         )}
                       >
                         {l === 'en' ? 'EN' : l === 'hi' ? 'हिं' : 'मरा'}
@@ -259,7 +309,7 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
             <div className="mb-4">
               <button
                 onClick={() => setShowEvidence(!showEvidence)}
-                className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                className="flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
               >
                 {showEvidence ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 <span>View Sources ({(claim.evidence as unknown[]).length})</span>
@@ -276,13 +326,13 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
                     {(claim.evidence as Array<{ snippet?: string; excerpt?: string; url?: string; source?: string }>).slice(0, 5).map((evidence, idx) => (
                       <div 
                         key={idx}
-                        className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100"
+                        className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200"
                       >
-                        <div className="shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
+                        <div className="shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-bold">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-gray-700 line-clamp-2">
+                          <p className="text-sm text-gray-600 line-clamp-2">
                             {evidence.snippet || evidence.excerpt || 'No description'}
                           </p>
                           {evidence.url && (
@@ -290,14 +340,14 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
                               href={evidence.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 mt-1"
+                              className="inline-flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 mt-1 font-medium"
                             >
                               <ExternalLink className="w-3 h-3" />
                               View Source
                             </a>
                           )}
                         </div>
-                        <span className="shrink-0 text-[10px] font-medium text-gray-400 uppercase bg-gray-100 px-2 py-1 rounded">
+                        <span className="shrink-0 text-[10px] font-medium text-gray-500 uppercase bg-white px-2 py-1 rounded border border-gray-200">
                           {evidence.source || 'source'}
                         </span>
                       </div>
@@ -309,8 +359,8 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim }) => {
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-            <div className="text-xs text-gray-400">
+          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+            <div className="text-xs text-gray-400 font-mono">
               ID: {claim.id.slice(0, 8)}...
             </div>
             <button 

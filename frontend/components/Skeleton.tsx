@@ -10,7 +10,7 @@ interface SkeletonProps {
 export const Skeleton: React.FC<SkeletonProps> = ({ className = '' }) => {
   return (
     <motion.div
-      className={`bg-linear-to-r from-gray-200 via-gray-100 to-gray-200 rounded-md ${className}`}
+      className={`bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 rounded-md ${className}`}
       animate={{
         backgroundPosition: ['200% 0', '-200% 0'],
       }}
@@ -51,7 +51,7 @@ export const ClaimCardSkeleton: React.FC = () => {
         </div>
 
         {/* Explanation skeleton */}
-        <div className="bg-gray-50 rounded-xl p-4 border border-gray-100">
+        <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
           <div className="flex items-center justify-between mb-3">
             <Skeleton className="h-5 w-24" />
             <Skeleton className="h-7 w-20" />

@@ -75,7 +75,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Main Input */}
         <div className="relative group">
-          <div className="absolute top-4 left-4 text-gray-400 transition-colors group-focus-within:text-blue-500">
+          <div className="absolute top-4 left-4 text-gray-400 transition-colors group-focus-within:text-orange-500">
             <Search className="w-5 h-5" />
           </div>
           <textarea
@@ -86,10 +86,10 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
               setError(null);
             }}
             placeholder="Paste a rumor, news, or WhatsApp forward to verify..."
-            className={`w-full pl-12 pr-4 py-4 rounded-xl bg-gray-50 border-2 transition-all min-h-[140px] resize-none text-gray-800 text-lg placeholder:text-gray-400 outline-none ${
+            className={`w-full pl-12 pr-4 py-4 rounded-xl bg-white border-2 transition-all min-h-[140px] resize-none text-gray-900 text-lg placeholder:text-gray-400 outline-none shadow-sm ${
               error 
-                ? 'border-rose-300 focus:border-rose-500 bg-rose-50/50' 
-                : 'border-transparent focus:bg-white focus:border-blue-500'
+                ? 'border-red-300 focus:border-red-500 bg-red-50' 
+                : 'border-gray-200 focus:bg-white focus:border-orange-500'
             }`}
             disabled={loading}
             maxLength={MAX_CHARS}
@@ -99,10 +99,10 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
           <div className="absolute bottom-3 right-3 flex items-center gap-2">
             <span className={`text-xs font-medium transition-colors ${
               charCount > MAX_CHARS 
-                ? 'text-rose-500' 
+                ? 'text-red-500' 
                 : charCount < MIN_CHARS 
                   ? 'text-gray-400'
-                  : 'text-emerald-500'
+                  : 'text-green-600'
             }`}>
               {charCount}/{MAX_CHARS}
             </span>
@@ -111,13 +111,13 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
 
         {/* Example Claims */}
         <div className="flex flex-wrap gap-2">
-          <span className="text-xs text-gray-400 font-medium">Try:</span>
+          <span className="text-xs text-gray-500 font-medium">Try:</span>
           {exampleClaims.map((example, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => setText(example)}
-              className="text-xs text-blue-600 hover:text-blue-700 hover:underline"
+              className="text-xs text-orange-600 hover:text-orange-700 hover:underline font-medium"
             >
               {example.slice(0, 40)}...
             </button>
@@ -140,7 +140,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
                   }
                 }}
                 placeholder="Add image URL (optional)"
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent shadow-sm"
                 disabled={loading}
               />
             </div>
@@ -148,7 +148,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
               type="button"
               onClick={addImageUrl}
               disabled={!imageInput.trim()}
-              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors disabled:opacity-50"
+              className="px-3 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 transition-colors disabled:opacity-50"
             >
               Add
             </button>
@@ -184,7 +184,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
                     <button
                       type="button"
                       onClick={() => removeImageUrl(url)}
-                      className="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -202,7 +202,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-2 p-3 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-sm"
+              className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"
             >
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
@@ -217,7 +217,7 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-700 text-sm"
+              className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm"
             >
               <CheckCircle className="w-4 h-4 shrink-0" />
               <span>Claim submitted successfully! Verification in progress...</span>
@@ -229,13 +229,13 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
           <div className="space-y-1">
             <p className="text-xs text-gray-500 font-medium flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full border border-gray-200">
                 🇬🇧 EN
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-orange-50 text-orange-600 rounded-full border border-orange-200">
                 🇮🇳 हिंदी
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-600 rounded-full">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-600 rounded-full border border-green-200">
                 🇮🇳 मराठी
               </span>
             </p>
@@ -247,10 +247,10 @@ export const ClaimForm: React.FC<ClaimFormProps> = ({ onClaimSubmitted }) => {
           <button
             type="submit"
             disabled={!canSubmit}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-sm hover:shadow active:scale-[0.98] ${
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-semibold transition-all shadow-lg active:scale-[0.98] ${
               canSubmit
-                ? 'bg-linear-to-r from-blue-600 to-violet-600 text-white hover:from-blue-700 hover:to-violet-700'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-orange-500/25'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
             }`}
           >
             {loading ? (

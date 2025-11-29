@@ -10,6 +10,7 @@ import { generalRateLimiter } from './middleware/rateLimiter.js';
 dotenv.config();
 
 import claimRoutes from './routes/claimroutes.js';
+import whatsappRoutes from './routes/whatsappRoutes.js';
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/claims', claimRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -58,6 +60,7 @@ app.get('/', (req, res) => {
     endpoints: {
       health: '/health',
       claims: '/api/claims',
+      whatsapp: '/api/whatsapp',
     }
   });
 });

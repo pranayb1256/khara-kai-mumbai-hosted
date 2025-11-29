@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   description: "Mumbai's Reality Check—When Truth Matters Most. AI-powered fact-checking for Mumbai's viral news, rumors, and crisis misinformation. Verify claims in English, Hindi & Marathi.",
   keywords: ["fact-check", "Mumbai", "news verification", "fake news", "WhatsApp forwards", "AI verification", "Khara Kai", "misinformation", "flood news", "Mumbai Police", "BMC alerts"],
   authors: [{ name: "Khara Kai Mumbai Team" }],
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   openGraph: {
     title: "Khara Kai Mumbai - Real-Time Truth Guardian",
     description: "Mumbai's Reality Check—When Truth Matters Most. Combat misinformation during floods, accidents & crises.",

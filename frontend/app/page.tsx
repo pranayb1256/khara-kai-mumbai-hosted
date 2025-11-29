@@ -1,200 +1,376 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClaimForm } from '@/components/ClaimForm';
 import { ClaimFeed } from '@/components/ClaimFeed';
+import { ClaimDetail } from '@/components/ClaimDetail';
 import { ToastProvider } from '@/components/Toast';
-import { ShieldCheck, Sparkles, Github, Twitter, TrendingUp, AlertTriangle, Radio, Zap } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { 
+  ShieldCheck, 
+  Github, 
+  Twitter, 
+  TrendingUp, 
+  AlertTriangle, 
+  Radio, 
+  Zap, 
+  MessageCircle,
+  Activity,
+  Clock,
+  CheckCircle,
+  XCircle,
+  BarChart3,
+  Bell,
+  Settings,
+  Search,
+  Filter,
+  RefreshCw
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { getClaims, Claim } from '@/lib/api';
+import { FlipWords } from '@/components/ui/flip-words';
 
 export default function Home() {
   const [refreshKey, setRefreshKey] = useState(0);
+  const [claims, setClaims] = useState<Claim[]>([]);
+  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleClaimSubmitted = () => {
     setRefreshKey((prev) => prev + 1);
   };
 
+  // Fetch claims
+  useEffect(() => {
+    const fetchClaims = async () => {
+      try {
+        const data = await getClaims();
+        setClaims(data || []);
+        // Auto-select first claim if none selected
+        if (data && data.length > 0 && !selectedClaim) {
+          setSelectedClaim(data[0]);
+        }
+      } catch (err) {
+        console.error('Failed to fetch claims', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchClaims();
+    const interval = setInterval(fetchClaims, 15000);
+    return () => clearInterval(interval);
+  }, [refreshKey]);
+
+  // Stats
+  const stats = {
+    total: claims.length,
+    verified: claims.filter(c => ['verified', 'confirmed'].includes(c.status)).length,
+    debunked: claims.filter(c => ['debunked', 'contradicted'].includes(c.status)).length,
+    pending: claims.filter(c => ['pending', 'in_progress'].includes(c.status)).length,
+  };
+
   return (
     <ToastProvider>
-      <main className="min-h-screen bg-[#FAFAFA] selection:bg-blue-100 selection:text-blue-900">
-        {/* Background Decoration */}
-        <div className="fixed inset-0 -z-10 h-full w-full bg-white bg-[linear-gradient(to_right,#f0f0f0_1px,transparent_1px),linear-gradient(to_bottom,#f0f0f0_1px,transparent_1px)] bg-size-[6rem_4rem]">
-          <div className="absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(circle_800px_at_100%_200px,#d5c5ff,transparent)]"></div>
-        </div>
+      <div className="min-h-screen bg-gray-50 font-sans">
+        {/* Top Navigation Bar */}
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
+          <div className="max-w-[1800px] mx-auto px-4 sm:px-6">
+            <div className="flex items-center justify-between h-16">
+              {/* Logo & Brand */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25">
+                  <ShieldCheck className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+                    Khara Kai <span className="text-orange-500">Mumbai</span>
+                  </h1>
+                  <p className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
+                    Crisis Verification Dashboard
+                  </p>
+                </div>
+              </div>
 
-        {/* Top Banner */}
-        <div className="bg-linear-to-r from-blue-600 via-violet-600 to-purple-600 text-white py-2.5 px-4 text-center text-sm font-medium">
-          <span className="inline-flex items-center gap-2">
-            <Radio className="w-4 h-4 animate-pulse" />
-            Mumbai&apos;s Reality Check — When Truth Matters Most
-            <span className="hidden sm:inline-flex items-center gap-1 ml-2 px-2 py-0.5 bg-white/20 rounded-full text-xs">
-              <Zap className="w-3 h-3" /> Live
-            </span>
-          </span>
-        </div>
+              {/* Center - Live Status */}
+              <div className="hidden md:flex items-center gap-4">
+                <div className="flex items-center gap-2 px-4 py-2 bg-orange-50 border border-orange-200 rounded-full">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+                  <span className="text-sm font-semibold text-orange-700">LIVE</span>
+                  <span className="text-sm text-orange-600">•</span>
+                  <span className="text-sm text-gray-600">{stats.total} claims tracked</span>
+                </div>
+              </div>
 
-        <div className="max-w-4xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
-          <motion.header 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-center mb-16 relative"
-          >
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-blue-400/20 blur-3xl rounded-full" />
-            
+              {/* Right Actions */}
+              <div className="flex items-center gap-2">
+                <button className="p-2 text-gray-500 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors">
+                  <Bell className="w-5 h-5" />
+                </button>
+                <button className="p-2 text-gray-500 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors">
+                  <Settings className="w-5 h-5" />
+                </button>
+                <a 
+                  href="https://github.com/pranayb1256/khar-ka-mumbai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Github className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Alert Banner */}
+          <div className="bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 text-white py-2 px-4">
+            <div className="max-w-[1800px] mx-auto flex items-center justify-center gap-2 text-sm font-medium">
+              <Radio className="w-4 h-4 animate-pulse" />
+              <span>Mumbai&apos;s Reality Check — Combating misinformation during</span>
+              <FlipWords 
+                words={["floods", "accidents", "crises", "emergencies"]} 
+                className="font-bold text-white"
+                duration={2500}
+              />
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <motion.div 
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2, type: "spring" }}
-              className="inline-flex items-center justify-center p-5 bg-white rounded-2xl shadow-lg border border-gray-100 mb-8 relative z-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
             >
-              <ShieldCheck className="w-12 h-12 text-blue-600" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-gray-600" />
+                </div>
+                <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Total</span>
+              </div>
+              <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-sm text-gray-500 mt-1">Claims tracked</p>
             </motion.div>
-            
-            <h1 className="text-5xl sm:text-6xl font-black text-gray-900 mb-4 tracking-tight leading-tight">
-              Khara Kai{' '}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-violet-600 to-purple-600">
-                Mumbai
-              </span>
-            </h1>
-            
-            <p className="text-lg text-gray-500 font-medium mb-4">
-              🛡️ Real-Time Truth Guardian
-            </p>
-            
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
-              Autonomous AI agent combating misinformation during Mumbai&apos;s critical moments — 
-              floods, accidents, and crises. Verify before you share!
-            </p>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center gap-3 text-sm text-gray-500">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200 shadow-sm">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                AI Powered
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200 shadow-sm">
-                ⚡ Real-time Verification
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200 shadow-sm">
-                🌐 EN • हिं • मरा
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white rounded-full border border-gray-200 shadow-sm">
-                🔍 Multi-Source Verification
-              </span>
-            </div>
-          </motion.header>
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl p-5 border border-green-200 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+                <span className="text-xs font-medium text-green-600 uppercase tracking-wider">Confirmed</span>
+              </div>
+              <p className="text-3xl font-bold text-green-600">{stats.verified}</p>
+              <p className="text-sm text-gray-500 mt-1">Verified true</p>
+            </motion.div>
 
-          {/* Crisis Alert Banner (shown during emergencies) */}
-          {/* <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3"
-          >
-            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
-            <div>
-              <p className="font-semibold text-amber-800">Heavy Rain Alert Active</p>
-              <p className="text-sm text-amber-700">Extra vigilance on flood-related claims. Verify before sharing!</p>
-            </div>
-          </motion.div> */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-2xl p-5 border border-red-200 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                  <XCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <span className="text-xs font-medium text-red-600 uppercase tracking-wider">Contradicted</span>
+              </div>
+              <p className="text-3xl font-bold text-red-600">{stats.debunked}</p>
+              <p className="text-sm text-gray-500 mt-1">Debunked</p>
+            </motion.div>
 
-          <div className="space-y-16">
-            <motion.section 
+            <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="relative z-10"
+              className="bg-white rounded-2xl p-5 border border-amber-200 shadow-sm hover:shadow-md transition-shadow"
             >
-              <div className="absolute -inset-1 bg-linear-to-r from-blue-600 to-violet-600 rounded-2xl blur opacity-20" />
-              <div className="relative bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
-                <div className="p-1.5 bg-gray-50 border-b border-gray-100 flex items-center gap-2 px-4">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Submit Claim for Verification
-                  </span>
-                  <div className="flex-1" />
-                  <div className="flex gap-1">
-                    <div className="w-3 h-3 rounded-full bg-rose-400" />
-                    <div className="w-3 h-3 rounded-full bg-amber-400" />
-                    <div className="w-3 h-3 rounded-full bg-emerald-400" />
-                  </div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-amber-600" />
                 </div>
-                <div className="p-6 sm:p-8">
-                  <ClaimForm onClaimSubmitted={handleClaimSubmitted} />
-                </div>
+                <span className="text-xs font-medium text-amber-600 uppercase tracking-wider">Pending</span>
               </div>
-            </motion.section>
-            
-            <motion.section
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <ClaimFeed keyProp={refreshKey} />
-            </motion.section>
+              <p className="text-3xl font-bold text-amber-600">{stats.pending}</p>
+              <p className="text-sm text-gray-500 mt-1">Processing</p>
+            </motion.div>
           </div>
 
-          {/* How It Works Section */}
-          <motion.section
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="mt-24 text-center"
+          {/* Submit Claim Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-6 overflow-hidden"
           >
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">How Khara Kai Mumbai Works</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Radio className="w-6 h-6 text-blue-600" />
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-white" />
                 </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Monitor</h3>
-                <p className="text-sm text-gray-600">Tracks Twitter, news sources, and social media for Mumbai-related claims in real-time</p>
+                <div>
+                  <h2 className="text-white font-bold">Submit Claim for Verification</h2>
+                  <p className="text-gray-400 text-xs">Paste a rumor, news, or WhatsApp forward</p>
+                </div>
               </div>
-              <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
-                <div className="w-12 h-12 bg-violet-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <ShieldCheck className="w-6 h-6 text-violet-600" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Verify</h3>
-                <p className="text-sm text-gray-600">Cross-references with BMC, Mumbai Police, Railways & official sources using AI</p>
-              </div>
-              <div className="p-6 bg-white rounded-xl border border-gray-100 shadow-sm">
-                <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-                  <Zap className="w-6 h-6 text-emerald-600" />
-                </div>
-                <h3 className="font-semibold text-gray-900 mb-2">Alert</h3>
-                <p className="text-sm text-gray-600">Delivers fact-checks in English, Hindi & Marathi with actionable guidance</p>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-1 bg-orange-500/20 text-orange-400 text-xs font-semibold rounded-full">AI Powered</span>
               </div>
             </div>
-          </motion.section>
+            <div className="p-6">
+              <ClaimForm onClaimSubmitted={handleClaimSubmitted} />
+            </div>
+          </motion.div>
 
-          <footer className="mt-24 text-center pb-8">
-            <div className="flex justify-center gap-4 mb-4">
-              <a 
-                href="https://github.com/pranayb1256/khar-ka-mumbai" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a 
-                href="https://twitter.com/KharaKaiMumbai" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
+          {/* Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Left Column - Claims List */}
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="lg:col-span-5 xl:col-span-4"
+            >
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden sticky top-32">
+                {/* List Header */}
+                <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-orange-500" />
+                      Live Claims
+                    </h3>
+                    <button 
+                      onClick={() => setRefreshKey(k => k + 1)}
+                      className="p-2 text-gray-500 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  {/* Search */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search claims..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Claims List */}
+                <div className="max-h-[calc(100vh-400px)] overflow-y-auto p-4">
+                  <ClaimFeed 
+                    keyProp={refreshKey}
+                    selectedClaim={selectedClaim}
+                    onClaimSelect={setSelectedClaim}
+                  />
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Column - Claim Detail */}
+            <motion.div 
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+              className="lg:col-span-7 xl:col-span-8"
+            >
+              <AnimatePresence mode="wait">
+                {selectedClaim ? (
+                  <ClaimDetail key={selectedClaim.id} claim={selectedClaim} />
+                ) : (
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-12 text-center"
+                  >
+                    <div className="w-20 h-20 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <ShieldCheck className="w-10 h-10 text-gray-400" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">Select a claim to analyze</h3>
+                    <p className="text-gray-500 max-w-md mx-auto">
+                      Click on any claim from the list to view detailed analysis, evidence, and verification status.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </div>
+
+          {/* WhatsApp CTA */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mt-8 bg-gradient-to-r from-gray-900 to-black rounded-2xl p-8 text-white relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl" />
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-500/30">
+                  <MessageCircle className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold">Verify via WhatsApp</h3>
+                  <p className="text-gray-400 text-sm">Forward suspicious messages for instant fact-checking</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <a
+                  href="https://wa.me/14155238886?text=hi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-semibold transition-colors shadow-lg shadow-orange-500/25"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  Open WhatsApp
+                </a>
+                <span className="text-gray-500 text-sm hidden md:block">
+                  +1 415 523 8886
+                </span>
+              </div>
             </div>
-            <p className="text-gray-400 text-sm">
-              © {new Date().getFullYear()} Khara Kai Mumbai. Mumbai&apos;s Reality Check.
-            </p>
-            <p className="text-gray-300 text-xs mt-2">
-              Autonomous AI Agent • Multilingual • Made with ❤️ for Mumbai
-            </p>
-          </footer>
-        </div>
-      </main>
+          </motion.div>
+        </main>
+
+        {/* Footer */}
+        <footer className="bg-white border-t border-gray-200 mt-12">
+          <div className="max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-gray-600">
+                  © {new Date().getFullYear()} Khara Kai Mumbai. Mumbai&apos;s Reality Check.
+                </span>
+              </div>
+              <div className="flex items-center gap-6">
+                <span className="text-xs text-gray-400">Powered by AI • EN • हिं • मरा</span>
+                <div className="flex items-center gap-2">
+                  <a href="https://github.com/pranayb1256/khar-ka-mumbai" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <Github className="w-4 h-4" />
+                  </a>
+                  <a href="https://twitter.com/KharaKaiMumbai" target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                    <Twitter className="w-4 h-4" />
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
     </ToastProvider>
   );
 }

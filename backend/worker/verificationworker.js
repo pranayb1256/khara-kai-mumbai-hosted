@@ -5,6 +5,7 @@ import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { supabase } from '../config/supabaseClient.js';
 import { verifyClaim } from '../services/verificationServices.js';
+import { notifyVerificationComplete } from '../services/whatsappBot.js';
 
 const connection = new IORedis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null
@@ -69,6 +70,14 @@ const worker = new Worker(queueName, async job => {
     if (recencyInfo) {
       console.log(`  Recency: isOldNews=${recencyInfo.isOldNews}, daysSince=${recencyInfo.daysSinceLatestEvidence}, warning=${recencyInfo.warning ? 'yes' : 'no'}`);
     }
+
+    // Notify WhatsApp users when verification completes
+    try {
+      await notifyVerificationComplete(claimId);
+    } catch (notifyErr) {
+      console.warn('[Worker] WhatsApp notification failed:', notifyErr.message);
+    }
+
     // Optional: auto-publish if high priority & high confidence
     const autoPublishThreshold = parseFloat(process.env.AUTO_PUBLISH_CONFIDENCE || '0.85');
     if (result.priority >= 7 && result.confidence >= autoPublishThreshold && result.status !== 'unconfirmed') {
