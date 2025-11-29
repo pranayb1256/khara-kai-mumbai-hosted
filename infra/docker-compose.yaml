@@ -74,5 +74,17 @@ services:
     depends_on:
       - backend
 
+  deepfake-detector:
+    build:
+      context: ./services/deepfake-detector
+    volumes:
+      - ./services/deepfake-detector:/app
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "8005:8005"
+    depends_on:
+      - redis
+
 volumes:
   mongo_data:

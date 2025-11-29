@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ClaimForm } from '@/components/ClaimForm';
 import { ClaimFeed } from '@/components/ClaimFeed';
 import { ClaimDetail } from '@/components/ClaimDetail';
+import { InteractiveMumbaiMap } from '@/components/InteractiveMumbaiMap';
 import { ToastProvider } from '@/components/Toast';
 import { 
   ShieldCheck, 
@@ -23,7 +24,9 @@ import {
   Settings,
   Search,
   Filter,
-  RefreshCw
+  RefreshCw,
+  Map,
+  List
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getClaims, Claim } from '@/lib/api';
@@ -35,6 +38,7 @@ export default function Home() {
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
 
   const handleClaimSubmitted = () => {
     setRefreshKey((prev) => prev + 1);
@@ -229,7 +233,50 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* Two Column Layout */}
+          {/* View Mode Toggle */}
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-gray-900">Claims Overview</h2>
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  viewMode === 'list' 
+                    ? 'bg-white text-orange-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <List className="w-4 h-4" />
+                List View
+              </button>
+              <button
+                onClick={() => setViewMode('map')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  viewMode === 'map' 
+                    ? 'bg-white text-orange-600 shadow-sm' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <Map className="w-4 h-4" />
+                Map View
+              </button>
+            </div>
+          </div>
+
+          {/* Conditional View: List or Map */}
+          {viewMode === 'map' ? (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6"
+            >
+              <InteractiveMumbaiMap 
+                claims={claims} 
+                onClaimClick={setSelectedClaim}
+                selectedClaimId={selectedClaim?.id}
+              />
+            </motion.div>
+          ) : (
+          /* Two Column Layout */
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left Column - Claims List */}
             <motion.div 
@@ -307,6 +354,7 @@ export default function Home() {
               </AnimatePresence>
             </motion.div>
           </div>
+          )}
 
           {/* WhatsApp CTA */}
           <motion.div 

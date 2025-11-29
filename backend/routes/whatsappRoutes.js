@@ -3,11 +3,6 @@ import { Router } from 'express';
 import { processWhatsAppMessage } from '../services/whatsappBot.js';
 
 const router = Router();
-
-/**
- * Twilio WhatsApp Webhook
- * POST /api/whatsapp/webhook
- */
 router.post('/webhook', async (req, res) => {
   try {
     const { From, Body, MediaUrl0 } = req.body;
@@ -33,18 +28,14 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-/**
- * Status callback for message delivery
- */
+
 router.post('/status', async (req, res) => {
   const { MessageSid, MessageStatus, To } = req.body;
   console.log(`[WhatsApp Status] ${MessageSid} to ${To}: ${MessageStatus}`);
   res.status(200).send('OK');
 });
 
-/**
- * Health check for WhatsApp integration
- */
+
 router.get('/health', (req, res) => {
   const twilioConfigured = !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN);
   
@@ -55,7 +46,6 @@ router.get('/health', (req, res) => {
   });
 });
 
-// Helper to escape XML special characters
 function escapeXml(str) {
   return str
     .replace(/&/g, '&amp;')
